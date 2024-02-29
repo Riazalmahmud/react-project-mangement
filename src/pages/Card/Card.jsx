@@ -38,39 +38,47 @@ function bgcolorChange(props) {
                 : "#EAF4FC";
 }
 const Card = ({ task, index }) => {
-    console.log(task, index);
+
     return (
         <Draggable draggableId={`${task.id}`} key={task.id} index={index}>
         {(provided, snapshot) => (
-            <Container
+            <div
                 {...provided.draggableProps}
                 {...provided.dragHandleProps}
                 ref={provided.innerRef}
-                isDragging={snapshot.isDragging}
+               
             >
-                <div style={{ display: "flex", justifyContent: "start", padding: 2 }}>
-        <span>
-          <small>
-            #{task.id}
-              {"  "}
-          </small>
-        </span>
-                </div>
-                <div
-                    style={{ display: "flex", justifyContent: "center", padding: 2 }}
-                >
-                    <TextContent>{task.title}</TextContent>
-                </div>
-                <Icons>
-                    <div>
-                        <Avatar
-                            onClick={() => console.log(task)}
-                            src={"https://joesch.moe/api/v1/random?key=" + task.id}
-                        />
-                    </div>
-                </Icons>
-                {provided.placeholder}
-            </Container>
+
+                <div className="card card-compact w-full bg-base-100 shadow-xl my-2">
+  <div className="card-body">
+ <p>  #{task.id}</p>
+    <h2 className="card-title">{task.title}</h2>
+    <p>{task.title}</p>
+    <div className="avatar-group -space-x-6 rtl:space-x-reverse">
+  <div className="avatar">
+    <div className="w-12">
+      <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+    </div>
+  </div>
+  <div className="avatar">
+    <div className="w-12">
+      <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+    </div>
+  </div>
+  <div className="avatar">
+    <div className="w-12">
+      <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+    </div>
+  </div>
+  <div className="avatar">
+    <div className="w-12">
+      <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+            </div>
         )}
     </Draggable>
       

@@ -31,7 +31,6 @@ const TaskList = styled.div`
 `;
 
 const Column = ({ title, tasks, id }) => {
-    console.log(title);
     return (
         <Container className="column">
         <Title
@@ -56,6 +55,8 @@ const Column = ({ title, tasks, id }) => {
                     {provided.placeholder}
                 </TaskList>
             )}
+
+        
         </Droppable>
     </Container>
     );
