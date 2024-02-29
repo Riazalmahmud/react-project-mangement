@@ -1,108 +1,102 @@
-import React, { useState } from 'react';
-import styled from '@emotion/styled';
-
-import { DragDropContext, Droppable } from 'react-beautiful-dnd';
-import Task from './../Task/Task';
-import { columnsFromBackend } from '../../kanbanData';
-
-const Container = styled.div`
-  display: flex;
-`;
-
-const TaskList = styled.div`
-  min-height: 100px;
-  display: flex;
-  flex-direction: column;
-  background: #f3f3f3;
-  min-width: 341px;
-  border-radius: 5px;
-  padding: 15px 15px;
-  margin-right: 45px;
-`;
-
-const TaskColumnStyles = styled.div`
-  margin: 8px;
-  display: flex;
-  width: 100%;
-  min-height: 80vh;
-`;
-
-const Title = styled.span`
-  color: #10957d;
-  background: rgba(16, 149, 125, 0.15);
-  padding: 2px 10px;
-  border-radius: 5px;
-  align-self: flex-start;
-`;
-
+import React, { useState, useEffect } from "react";
+import { DragDropContext } from "react-beautiful-dnd";
+import Card from '../Card/Card';
+import Column from "../Column/Column";
 const Board = () => {
-    const [columns, setColumns] = useState(columnsFromBackend);
+  const [completed, setCompleted] = useState([]);
+    const [incomplete, setIncomplete] = useState([]);
+    const [backlog, setBacklog] = useState([]);
+    const [inReview, setInReview] = useState([]);
 
-  const onDragEnd = (result, columns, setColumns) => {
-    if (!result.destination) return;
-    const { source, destination } = result;
-    if (source.droppableId !== destination.droppableId) {
-      const sourceColumn = columns[source.droppableId];
-      const destColumn = columns[destination.droppableId];
-      const sourceItems = [...sourceColumn.items];
-      const destItems = [...destColumn.items];
-      const [removed] = sourceItems.splice(source.index, 1);
-      destItems.splice(destination.index, 0, removed);
-      setColumns({
-        ...columns,
-        [source.droppableId]: {
-          ...sourceColumn,
-          items: sourceItems,
-        },
-        [destination.droppableId]: {
-          ...destColumn,
-          items: destItems,
-        },
-      });
-    } else {
-      const column = columns[source.droppableId];
-      const copiedItems = [...column.items];
-      const [removed] = copiedItems.splice(source.index, 1);
-      copiedItems.splice(destination.index, 0, removed);
-      setColumns({
-        ...columns,
-        [source.droppableId]: {
-          ...column,
-          items: copiedItems,
-        },
-      });
+    useEffect(() => {
+        fetch("https://jsonplaceholder.typicode.com/comments?postId=1")
+            .then((response) => response.json())
+            .then((json) => {
+                setCompleted(json.filter((task) => task.completed));
+                setIncomplete(json.filter((task) => !task.completed));
+            });
+    }, []);
+
+    const handleDragEnd = (result) => {
+        const { destination, source, draggableId } = result;
+
+        if (!destination || source.droppableId === destination.droppableId) return;
+
+        deletePreviousState(source.droppableId, draggableId);
+
+        const task = findItemById(draggableId, [...incomplete, ...completed, ...inReview, ...backlog]);
+
+        setNewState(destination.droppableId, task);
+
+    };
+
+    function deletePreviousState(sourceDroppableId, taskId) {
+        switch (sourceDroppableId) {
+            case "1":
+                setIncomplete(removeItemById(taskId, incomplete));
+                break;
+            case "2":
+                setCompleted(removeItemById(taskId, completed));
+                break;
+            case "3":
+                setInReview(removeItemById(taskId, inReview));
+                break;
+            case "4":
+                setBacklog(removeItemById(taskId, backlog));
+                break;
+        }
+
     }
-  };
-    return (
-        <div>
-             <DragDropContext
-      onDragEnd={(result) => onDragEnd(result, columns, setColumns)}
+    function setNewState(destinationDroppableId, task) {
+        let updatedTask;
+        switch (destinationDroppableId) {
+            case "1":   // TO DO
+                updatedTask = { ...task, completed: false };
+                setIncomplete([updatedTask, ...incomplete]);
+                break;
+            case "2":  // DONE
+                updatedTask = { ...task, completed: true };
+                setCompleted([updatedTask, ...completed]);
+                break;
+            case "3":  // IN REVIEW
+                updatedTask = { ...task, completed: false };
+                setInReview([updatedTask, ...inReview]);
+                break;
+            case "4":  // BACKLOG
+                updatedTask = { ...task, completed: false };
+                setBacklog([updatedTask, ...backlog]);
+                break;
+        }
+    }
+    function findItemById(id, array) {
+        return array.find((item) => item.id == id);
+    }
+
+    function removeItemById(id, array) {
+        return array.filter((item) => item.id != id);
+    }
+
+  return (
+    <DragDropContext onDragEnd={handleDragEnd}>
+    <h2 style={{ textAlign: "center" }}>PROGRESS BOARD</h2>
+
+    <div
+        style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexDirection: "row",
+            width: "1300px",
+            margin: "0 auto"
+        }}
     >
-      <Container>
-        <TaskColumnStyles>
-          {Object.entries(columns).map(([columnId, column], index) => {
-            return (
-              <Droppable key={columnId} droppableId={columnId}>
-                {(provided, snapshot) => (
-                  <TaskList
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
-                    <Title>{column.title}</Title>
-                    {column.items.map((item, index) => (
-                      <Task key={item} item={item} index={index} />
-                    ))}
-                    {provided.placeholder}
-                  </TaskList>
-                )}
-              </Droppable>
-            );
-          })}
-        </TaskColumnStyles>
-      </Container>
-    </DragDropContext>
-        </div>
-    );
+        <Column title={"TO DO"} tasks={incomplete} id={"1"} />
+        <Column title={"DONE"} tasks={completed} id={"2"} />
+        <Column title={"IN REVIEW"} tasks={inReview} id={"3"} />
+        <Column title={"BACKLOG"} tasks={backlog} id={"4"} />
+    </div>
+</DragDropContext>
+  );
 };
 
 export default Board;
