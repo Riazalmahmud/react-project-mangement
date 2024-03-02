@@ -118,20 +118,34 @@ try {
     }
   };
 
-  useEffect(()=>{
-    fetch('http://localhost:3000/api/v1/project')
-    .then(res=>res.json())
-    .then(data=> {
-      setGetProjectData(data.data)
-     
-
-    })
-
-  
-  }, [])
-
+  useEffect(() => {
+    fetch("http://localhost:3000/api/v1/project")
+      .then((res) => res.json())
+      .then((data) => {
+        
+        setGetProjectData(data.data);
+      });
+  }, []);
+  const handaleProjectRemove = async (id) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:3000/api/v1/project/${id}`
+      );
+      console.log(response.data); // Handle response accordingly
+      if (response.data.status === true) {
+        const newItems = getProjectData.filter((item) => item._id !== id);
+        setGetProjectData(newItems);
+        toast(response.data.message);
+      }
+    } catch (error) {
+      toast.error(error.response.data.massage);
+    }
+    console.log(id);
+  };
   return (
     <>
+      <ToastContainer />
+
       <button
         data-drawer-target="separator-sidebar"
         data-drawer-toggle="separator-sidebar"
@@ -233,40 +247,37 @@ try {
               </a>
             </li>
 
-      {dialogData
-        && (
-          <dialog id="add_category_model" className="modal ">
-          <div className=" bg-white p-4 shadow-lg lg:w-[550px] w-full">
-            <form onSubmit={handleProjectSubmit}>
-            <form method="dialog" >
-              {/* if there is a button in form, it will close the modal */}
-              <button className="btn btn-sm btn-circle float-right right-2 top-2 ">
-                ✕
-              </button>
-            </form>
+            {dialogData && (
+              <dialog id="add_category_model" className="modal ">
+                <div className=" bg-white p-4 shadow-lg lg:w-[550px] w-full">
+                  <form onSubmit={handleProjectSubmit}>
+                    <form method="dialog">
+                      {/* if there is a button in form, it will close the modal */}
+                      <button className="btn btn-sm btn-circle float-right right-2 top-2 ">
+                        ✕
+                      </button>
+                    </form>
 
-            <label className="label">
-              <span className="label-title">Enter Category Name</span>
-            </label>
-            <input
-             value={projectData.projectName}
-             onChange={handleProjectChange}
-              type="text"
-              name='projectName'
-              placeholder="Enter Category Name"
-              className="input input-bordered input-warning w-full"
-              required
-            />
+                    <label className="label">
+                      <span className="label-title">Enter Category Name</span>
+                    </label>
+                    <input
+                      value={projectData.projectName}
+                      onChange={handleProjectChange}
+                      type="text"
+                      name="projectName"
+                      placeholder="Enter Category Name"
+                      className="input input-bordered input-warning w-full"
+                      required
+                    />
 
-            <div className="form-control mt-6">
-              <button className="btn btn-primary">Submit</button>
-            </div>
-            </form>
-           
-          </div>
-        </dialog>
-        )
-      }
+                    <div className="form-control mt-6">
+                      <button className="btn btn-primary">Submit</button>
+                    </div>
+                  </form>
+                </div>
+              </dialog>
+            )}
             {/*------------------------------- add team dialog ------------------------------------------------ */}
             <dialog id="add_team_model" className="modal ">
               <div className="hero-content flex-col lg:flex-row-reverse">
@@ -333,33 +344,34 @@ try {
                 </div>
               </div>
             </dialog>
-           
-         {
-         
-          getProjectData.map(project=> {
-
-            <li>
-              <a
-                href="#"
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-              >
-                <svg
-                  className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 20 18"
+            {/*----------------------- crate project ------------------- */}
+            {getProjectData.map((project, index) => (
+              <li key={index}>
+                <a
+                  href="#"
+                  className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
                 >
-                  <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z" />
-                </svg>
-                <span className="flex-1 ms-3 whitespace-nowrap">{project.projectName}</span>
-              </a>
-            </li>
-            console.log(project.projectName)
-          }
-
-          )
-         }
+                  <svg
+                    className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="currentColor"
+                    viewBox="0 0 20 18"
+                  >
+                    <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z" />
+                  </svg>
+                  <span className="flex-1 ms-3 whitespace-nowrap">
+                    {project.projectName}
+                  </span>
+                  <button
+                    className="btn btn-xs text-red-500"
+                    onClick={() => handaleProjectRemove(project._id)}
+                  >
+                    X
+                  </button>
+                </a>
+              </li>
+            ))}
           </ul>
           <ul className="pt-4 mt-4 space-y-2 font-medium border-t border-gray-200 dark:border-gray-700">
             <li>
