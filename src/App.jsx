@@ -4,9 +4,12 @@ import './App.css'
 import Board from './pages/Board/Board'
 import { FaPlus } from "react-icons/fa6";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import getUser from "./auth/auth";
-
+import { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import api from './auth/getUserMe';
 
 function App() {
    const navigate = useNavigate();
@@ -17,6 +20,116 @@ function App() {
      navigate("/login");
    };
   getUser();
+  const initialFormData = {
+    email: "",
+    password: "",
+    confirmPassword: "",
+    parentUserId: ""
+  };
+  const [formData, setFormData] = useState(initialFormData);
+  const [userData, setUserData] = useState({});
+  const [projectData, setProjectData] = useState({});
+  const [dialogData, setDialogData] = useState(true);
+  const [getProjectData, setGetProjectData] = useState([]);
+
+
+
+
+
+// -------------------------- get user me --------------------------
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+     const token = localStorage.getItem("token") // Replace 'your_token_here' with your actual token
+        const response = await  axios.get('http://localhost:3000/api/v1/user/getMe', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setUserData(response.data);
+        const { email, parentUserId } = response.data;
+       
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchData();
+    
+  }, []);
+
+
+
+// add team member 
+const handleSubmit = async (e) => {
+  e.preventDefault();
+const data = {
+  ...formData,
+  parentUserId: userData.data._id
+}
+try {
+    const response = await axios.post(
+      "http://localhost:3000/api/v1/user",
+      data
+    );
+    console.log(response.data); // Handle response accordingly
+    if (response.data.status === true) {
+      toast(response.data.message);
+    }
+  } catch (error) {
+    toast.error(error.response.data.massage);
+  }
+};
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+  
+    });
+  };
+  const handleProjectChange = (e) => {
+    const { name, value } = e.target;
+    setProjectData({
+      ...projectData,
+      [name]: value,
+  
+    });
+  };
+
+
+
+  const handleProjectSubmit = async (e) => {
+    e.preventDefault();
+  try {
+      const response = await axios.post(
+        "http://localhost:3000/api/v1/project",
+        projectData
+      );
+    setDialogData(false)
+      if (response.data.status === true) {
+        toast(response.data.message);
+        
+      }
+
+    } catch (error) {
+      toast.error(error.response.data.massage);
+    }
+  };
+
+  useEffect(()=>{
+    fetch('http://localhost:3000/api/v1/project')
+    .then(res=>res.json())
+    .then(data=> {
+      setGetProjectData(data.data)
+     
+
+    })
+
+  
+  }, [])
+
   return (
     <>
       <button
@@ -94,6 +207,23 @@ function App() {
                 <span
                   className="flex-1 ms-3 whitespace-nowrap"
                   onClick={() =>
+                    document.getElementById("add_team_model").showModal()
+                  }
+                >
+                  {" "}
+                  Add Team
+                </span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+              >
+                <FaPlus className="text-xl" />
+                <span
+                  className="flex-1 ms-3 whitespace-nowrap"
+                  onClick={() =>
                     document.getElementById("add_category_model").showModal()
                   }
                 >
@@ -103,30 +233,111 @@ function App() {
               </a>
             </li>
 
-            <dialog id="add_category_model" className="modal ">
-              <div className=" bg-white p-4 shadow-lg lg:w-[550px] w-full">
-                <form method="dialog">
-                  {/* if there is a button in form, it will close the modal */}
-                  <button className="btn btn-sm btn-circle float-right right-2 top-2 ">
-                    ✕
-                  </button>
-                </form>
+      {dialogData
+        && (
+          <dialog id="add_category_model" className="modal ">
+          <div className=" bg-white p-4 shadow-lg lg:w-[550px] w-full">
+            <form onSubmit={handleProjectSubmit}>
+            <form method="dialog" >
+              {/* if there is a button in form, it will close the modal */}
+              <button className="btn btn-sm btn-circle float-right right-2 top-2 ">
+                ✕
+              </button>
+            </form>
 
-                <label className="label">
-                  <span className="label-title">Enter Category Name</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter Category Name"
-                  className="input input-bordered input-warning w-full"
-                  required
-                />
+            <label className="label">
+              <span className="label-title">Enter Category Name</span>
+            </label>
+            <input
+             value={projectData.projectName}
+             onChange={handleProjectChange}
+              type="text"
+              name='projectName'
+              placeholder="Enter Category Name"
+              className="input input-bordered input-warning w-full"
+              required
+            />
 
-                <div className="form-control mt-6">
-                  <button className="btn btn-primary">Submit</button>
+            <div className="form-control mt-6">
+              <button className="btn btn-primary">Submit</button>
+            </div>
+            </form>
+           
+          </div>
+        </dialog>
+        )
+      }
+            {/*------------------------------- add team dialog ------------------------------------------------ */}
+            <dialog id="add_team_model" className="modal ">
+              <div className="hero-content flex-col lg:flex-row-reverse">
+                <div className="card shrink-0 lg:w-[450px] max-w-sm shadow-2xl bg-base-100">
+                  <form method="dialog">
+                    {/* if there is a button in form, it will close the modal */}
+                    <button className="btn btn-sm btn-circle float-right right-2 top-2 bg-red-600">
+                      ✕
+                    </button>
+                  </form>
+                  <form className="card-body" onSubmit={handleSubmit}>
+                    <div className="text-center">
+                      <h4 className="text-xl font-bold">Add team now!</h4>
+                    </div>
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text">Email</span>
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="email"
+                        className="input input-bordered"
+                        required
+                      />
+                    </div>
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text">Password</span>
+                      </label>
+                      <input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        placeholder="password"
+                        className="input input-bordered"
+                        required
+                      />
+                    </div>
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text">Confirm Password</span>
+                      </label>
+                      <input
+                        type="password"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Confirm Password"
+                        className="input input-bordered"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-control mt-6">
+                      <button type="submit" className="btn btn-primary">
+                        Submit
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             </dialog>
+           
+         {
+         
+          getProjectData.map(project=> {
+
             <li>
               <a
                 href="#"
@@ -141,9 +352,14 @@ function App() {
                 >
                   <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z" />
                 </svg>
-                <span className="flex-1 ms-3 whitespace-nowrap">Ecommerce</span>
+                <span className="flex-1 ms-3 whitespace-nowrap">{project.projectName}</span>
               </a>
             </li>
+            console.log(project.projectName)
+          }
+
+          )
+         }
           </ul>
           <ul className="pt-4 mt-4 space-y-2 font-medium border-t border-gray-200 dark:border-gray-700">
             <li>
