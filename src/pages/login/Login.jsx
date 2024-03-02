@@ -22,7 +22,7 @@ const Login = () => {
     try {
       // Make a request to your backend API to handle login
       const response = await axios.post(
-        "http://localhost:3000/api/v1/user/login",
+        "https://project-management-api-lyart.vercel.app/api/v1/user/login",
         formData
       );
       if (response.data.status === true) {

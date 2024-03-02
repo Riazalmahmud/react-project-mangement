@@ -41,7 +41,7 @@ function App() {
     const fetchData = async () => {
       try {
      const token = localStorage.getItem("token") // Replace 'your_token_here' with your actual token
-        const response = await  axios.get('http://localhost:3000/api/v1/user/getMe', {
+        const response = await  axios.get('https://project-management-api-lyart.vercel.app/api/v1/user/getMe', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -69,7 +69,7 @@ const data = {
 }
 try {
     const response = await axios.post(
-      "http://localhost:3000/api/v1/user",
+      "https://project-management-api-lyart.vercel.app/api/v1/user",
       data
     );
     console.log(response.data); // Handle response accordingly
@@ -104,7 +104,7 @@ try {
     e.preventDefault();
   try {
       const response = await axios.post(
-        "http://localhost:3000/api/v1/project",
+        "https://project-management-api-lyart.vercel.app/api/v1/project",
         projectData
       );
     setDialogData(false)
@@ -119,7 +119,7 @@ try {
   };
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/v1/project")
+    fetch("https://project-management-api-lyart.vercel.app/api/v1/project")
       .then((res) => res.json())
       .then((data) => {
         
@@ -129,7 +129,7 @@ try {
   const handaleProjectRemove = async (id) => {
     try {
       const response = await axios.delete(
-        `http://localhost:3000/api/v1/project/${id}`
+        `https://project-management-api-lyart.vercel.app/api/v1/project/${id}`
       );
       console.log(response.data); // Handle response accordingly
       if (response.data.status === true) {

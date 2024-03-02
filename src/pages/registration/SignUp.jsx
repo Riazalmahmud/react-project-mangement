@@ -26,7 +26,7 @@ const SignUp = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/v1/user",
+        "https://project-management-api-lyart.vercel.app/api/v1/user",
         formData
       );
       console.log(response.data); // Handle response accordingly
